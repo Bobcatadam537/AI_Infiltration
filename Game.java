@@ -28,9 +28,10 @@ public class Game extends Canvas implements Runnable {
 	Background bg;
 	ArrayList<Solid> solids = new ArrayList<Solid>();
 	LinkedList<Bullet> bullets = new LinkedList<Bullet>();
-	int[][] walkable = new int[0][0];
+	pNode[][] walkable = new pNode[0][0];
 
 	int cooldown = 2000;
+	static final int pNodeSize = 10;
 
 	private static final long serialVersionUID = 1L;
 	// static final Dimension resolution = new Dimension(240, 160);
@@ -123,14 +124,19 @@ public class Game extends Canvas implements Runnable {
 		tempPoints.add(new Point2D.Double(168, 460));
 		solids.add(new Solid(tempPoints, true));
 
-		walkable = new int[(int) bg.hitbox.getWidth() / 20][(int) bg.hitbox.getHeight() / 20];
+		walkable = new pNode[(int) (bg.hitbox.getWidth() / pNodeSize)][(int) (bg.hitbox.getHeight() / pNodeSize)];
+
 		for (int row = 0; row < walkable.length; row++) {
-			for (int col = 0; col < walkable[row].length; col++) {
-				GameObject temp = new GameObject(20, 20, row * 20, col * 20);
-				if (temp.collide(solids).size() == 0) {
-					walkable[row][col] = 1;
-				}
+			for (int col = 0; col < bg.hitbox.getHeight() / pNodeSize; col++) {
+				GameObject temp = new GameObject(row * pNodeSize, col * pNodeSize, pNodeSize, pNodeSize);
+				walkable[row][col] = new pNode(row, col, temp.collide(solids).size() == 0);
 			}
+		}
+
+		pNode.linkNodes(walkable);
+
+		for (Enemy e : enemies) {
+			e.loadPathfinding();
 		}
 
 		thread = new Thread(this);
@@ -210,8 +216,8 @@ public class Game extends Canvas implements Runnable {
 			e.render(g2d);
 		for (Bullet b : bullets)
 			b.render(g2d);
-//		for (Solid s : solids)
-//			s.render(g2d);
+		for (Solid s : solids)
+			s.render(g2d);
 		g2d.dispose();
 
 		bs.show();

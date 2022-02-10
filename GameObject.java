@@ -40,7 +40,7 @@ public class GameObject {
 	}
 
 	public boolean onScreen() {
-		return hitbox.getX() + Game.scrollX < 240 || hitbox.getMaxX() + Game.scrollX < 0
-				|| hitbox.getY() + Game.scrollY < 240 || hitbox.getMaxY() + Game.scrollY < 0;
+		return hitbox.getMinX() + Game.scrollX < 240 && hitbox.getMaxX() + Game.scrollX > 0
+				&& hitbox.getMinY() + Game.scrollY < 240 && hitbox.getMaxY() + Game.scrollY > 0;
 	}
 }

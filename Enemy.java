@@ -5,14 +5,19 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.imageio.ImageIO;
 
 public class Enemy extends Character {
 	int type;
 	boolean alive;
-	int[][] pathfinding;
+	boolean loaded = false;
+	pNode[][] pathfinding;
+	pNode nodePath;
+	int pathfindingCooldown = 5;
 
 	public Enemy(int x, int y, int w, int h, Game g) {
 		super(x, y, w, h, g);
@@ -27,7 +32,7 @@ public class Enemy extends Character {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		pathfinding = Arrays.copyOf(g.walkable, g.walkable.length);
+		pathfinding = null;
 	}
 
 	public Enemy(int x, int y, int w, int h, int t, Game g) {
@@ -41,19 +46,18 @@ public class Enemy extends Character {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		pathfinding = pNode.copy(game.walkable);
 	}
 
 	public void render(Graphics2D g) {
-		if (alive) {
+		if (alive && onScreen()) {
 			g.drawImage(sprites[d.dir][a.val], (int) (hitbox.getX() + Game.scrollX),
 					(int) (hitbox.getY() + Game.scrollY), W, H, null);
 			g.setColor(Color.BLUE);
-			// g.draw(hitbox);
-
-			// if (hitbox.intersects(game.screen))
-			if (onScreen())
-				tick();
+			loaded = true;
 		}
+		if (loaded)
+			tick();
 		damage();
 
 	}
@@ -93,13 +97,63 @@ public class Enemy extends Character {
 		super.trigMove(vx, vy);
 	}
 
-	public void findPath() {
+	public void loadPathfinding() {
+		pathfinding = pNode.copy(game.walkable);
+	}
 
+	public void findPath() {
+		if (pathfinding == null)
+			loadPathfinding();
+
+		pNode current = pathfinding[(int) (hitbox.getCenterX() / Game.pNodeSize)][(int) (hitbox.getCenterY()
+				/ Game.pNodeSize)];
+		current.parent = null;
+		boolean found = false;
+
+		Set<pNode> open = new HashSet<pNode>();
+		Set<pNode> closed = new HashSet<pNode>();
+		open.add(current);
+
+		while (!found) {
+			current = Collections.min(open);
+			open.remove(current);
+			closed.add(current);
+
+			if (game.p.hitbox.intersects(new Rectangle2D.Double(current.x * Game.pNodeSize, current.y * Game.pNodeSize,
+					Game.pNodeSize, Game.pNodeSize))) {
+				nodePath = current;
+				return;
+			}
+
+			for (pNode neighbor : current.neighbors) {
+				if (!neighbor.open || closed.contains(neighbor)) {
+					// skip
+				} else if (neighbor.cost > current.cost || !open.contains(neighbor)) {
+					if (neighbor.x == current.x || neighbor.y == current.y)
+						neighbor.cost = current.cost + 10;
+					else
+						neighbor.cost = current.cost + 14;
+					neighbor.parent = current;
+					current.child = neighbor;
+					if (!open.contains(neighbor))
+						open.add(neighbor);
+				}
+			}
+		}
 	}
 
 	public void tick() {
-		aimAt(game.p);
+		if (pathfindingCooldown <= 0) {
+			findPath();
+			pathfindingCooldown = 10;
+			System.out.println();
+		}
+		pathfindingCooldown--;
+		if (nodePath != null) {
+			aimAt(nodePath.maxParent(this));
+		}
 		trigMove();
+		aimAt(game.p);
 		attack();
 		getDirection();
 	}
