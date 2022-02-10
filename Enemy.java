@@ -5,14 +5,12 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
 public class Enemy extends Character {
 	int type;
 	boolean alive;
-	int[][] pathfinding;
 
 	public Enemy(int x, int y, int w, int h, Game g) {
 		super(x, y, w, h, g);
@@ -27,17 +25,18 @@ public class Enemy extends Character {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		pathfinding = Arrays.copyOf(g.walkable, g.walkable.length);
 	}
 
 	public Enemy(int x, int y, int w, int h, int t, Game g) {
 		super(x, y, w, h, g);
 		type = t;
 		alive = true;
+		cooldown = 0;
 		vx = vy = 0;
+		sprites = new Image[32][5];
 		try {
-			sprites = Game.generateSprites(sprites, ImageIO.read(getClass().getResource("/game/spriteSheets/Test.png")),
-					16, 20);
+			sprites = Game.generateSprites(sprites,
+					ImageIO.read(getClass().getResourceAsStream("/game/spriteSheets/test.png")), 16, 20);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -45,13 +44,12 @@ public class Enemy extends Character {
 
 	public void render(Graphics2D g) {
 		if (alive) {
-			g.drawImage(sprites[d.dir][a.val], (int) (hitbox.getX() + Game.scrollX),
-					(int) (hitbox.getY() + Game.scrollY), W, H, null);
+			g.drawImage(sprites[d.dir][a.val], (int) hitbox.getX(), (int) hitbox.getY(), (int) hitbox.getX() + W,
+					(int) hitbox.getY() + H, 0, 0, 16, 20, null);
 			g.setColor(Color.BLUE);
-			// g.draw(hitbox);
+			g.draw(hitbox);
 
-			// if (hitbox.intersects(game.screen))
-			if (onScreen())
+			if (hitbox.intersects(Game.borders))
 				tick();
 		}
 		damage();
@@ -83,24 +81,24 @@ public class Enemy extends Character {
 	}
 
 	public void attack() {
-		shoot(30);
+		if(type == 1)shoot(30);
+		if(type == 2)shoot(10);
 		cooldown--;
 	}
 
 	public void trigMove() {
-		vy = Math.sin(angle);
-		vx = Math.cos(angle);
+		vy = 0.25 * Math.sin(angle);
+		vx = 0.25 * Math.cos(angle);
 		super.trigMove(vx, vy);
 	}
 
-	public void findPath() {
-
-	}
-
 	public void tick() {
+		
+		if(type == 1) {
 		aimAt(game.p);
+		
 		trigMove();
-		attack();
+		attack();}
 		getDirection();
 	}
 }

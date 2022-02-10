@@ -65,8 +65,7 @@ public class Sword extends Weapon {
 		} else {
 			hitbox = new Rectangle2D.Double(player.hitbox.getCenterX(), player.hitbox.getCenterY(), 0, 0);
 		}
-		g.fill(new Rectangle2D.Double(hitbox.getX() + Game.scrollX, hitbox.getY() + Game.scrollY, hitbox.getWidth(),
-				hitbox.getHeight()));
+		g.fill(hitbox);
 
 		tick();
 	}

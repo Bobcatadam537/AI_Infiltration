@@ -31,16 +31,11 @@ public class GameObject {
 
 	}
 
-//	public void scroll(double mx, double my) {
-//		hitbox.setRect(hitbox.getMinX() + mx, hitbox.getMinY() + my, hitbox.getWidth(), hitbox.getHeight());
-//	}
+	public void scroll(double mx, double my) {
+		hitbox.setRect(hitbox.getMinX() + mx, hitbox.getMinY() + my, hitbox.getWidth(), hitbox.getHeight());
+	}
 
 	public void aimAt(GameObject o) {
 		angle = Math.atan2(o.hitbox.getCenterY() - hitbox.getCenterY(), o.hitbox.getCenterX() - hitbox.getCenterX());
-	}
-
-	public boolean onScreen() {
-		return hitbox.getX() + Game.scrollX < 240 || hitbox.getMaxX() + Game.scrollX < 0
-				|| hitbox.getY() + Game.scrollY < 240 || hitbox.getMaxY() + Game.scrollY < 0;
 	}
 }
