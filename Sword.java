@@ -30,42 +30,44 @@ public class Sword extends Weapon {
 		if (player.a == action.melee && player.cooldown > 1) {
 			switch (player.d) {
 			case down:
-				hitbox = new Rectangle2D.Double(player.hitbox.getCenterX() - width / 2 +Game.scrollX-1, player.hitbox.getMaxY()+Game.scrollY-1, width,
+				hitbox = new Rectangle2D.Double(player.hitbox.getCenterX() - width / 2  , player.hitbox.getMaxY() , width,
 						length);
 				break;
 			case downleft:
-				hitbox = new Rectangle2D.Double(player.hitbox.getX() - width +Game.scrollX-1, player.hitbox.getMaxY()+Game.scrollY-1, width, length);
+				hitbox = new Rectangle2D.Double(player.hitbox.getX() - width  , player.hitbox.getMaxY() , width, length);
 				break;
 			case downright:
-				hitbox = new Rectangle2D.Double(player.hitbox.getMaxX()+Game.scrollX-1, player.hitbox.getMaxY()+Game.scrollY-1, width, length);
+				hitbox = new Rectangle2D.Double(player.hitbox.getMaxX() , player.hitbox.getMaxY() , width, length);
 				break;
 			case left:
-				hitbox = new Rectangle2D.Double(player.hitbox.getX() - length+Game.scrollX-1, player.hitbox.getCenterY() - width / 2+Game.scrollY-1,
+				hitbox = new Rectangle2D.Double(player.hitbox.getX() - length , player.hitbox.getCenterY() - width / 2 ,
 						length, width);
 				break;
 			case right:
-				hitbox = new Rectangle2D.Double(player.hitbox.getMaxX()+Game.scrollX-1, player.hitbox.getCenterY() - width / 2+Game.scrollY-1, length,
+				hitbox = new Rectangle2D.Double(player.hitbox.getMaxX() , player.hitbox.getCenterY() - width / 2 , length,
 						width);
 				break;
 			case up:
-				hitbox = new Rectangle2D.Double(player.hitbox.getCenterX() - width / 2+Game.scrollX-1, player.hitbox.getY() - length+Game.scrollY-1,
+				hitbox = new Rectangle2D.Double(player.hitbox.getCenterX() - width / 2 , player.hitbox.getY() - length ,
 						width, length);
 				break;
 			case upleft:
-				hitbox = new Rectangle2D.Double(player.hitbox.getX() - width+Game.scrollX-1, player.hitbox.getY() - length+Game.scrollY-1, width,
+				hitbox = new Rectangle2D.Double(player.hitbox.getX() - width , player.hitbox.getY() - length , width,
 						length);
 				break;
 			case upright:
-				hitbox = new Rectangle2D.Double(player.hitbox.getMaxX()+Game.scrollX-1, player.hitbox.getY() - length+Game.scrollY-1, width, length);
+				hitbox = new Rectangle2D.Double(player.hitbox.getMaxX() , player.hitbox.getY() - length , width, length);
 				break;
 			default:
-				hitbox = new Rectangle2D.Double(player.hitbox.getCenterX()+Game.scrollX-1, player.hitbox.getCenterY()+Game.scrollY-1, 0, 0);
+				hitbox = new Rectangle2D.Double(player.hitbox.getCenterX() , player.hitbox.getCenterY() , 0, 0);
 				break;
 			}
 		} else {
-			hitbox = new Rectangle2D.Double(player.hitbox.getCenterX()+Game.scrollX-1, player.hitbox.getCenterY()+Game.scrollY-1, 0, 0);
+			//hitbox = new Rectangle2D.Double(player.hitbox.getCenterX() , player.hitbox.getCenterY() , 0, 0);
+			hitbox = new Rectangle2D.Double(0,0, 0, 0);
+
 		}
-		g.fill(hitbox);
+		g.fill(new Rectangle2D.Double((int) (hitbox.getX() + Game.scrollX), (int) (hitbox.getY() + Game.scrollY), width, length));
 
 		tick();
 	}
