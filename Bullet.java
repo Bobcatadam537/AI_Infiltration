@@ -28,12 +28,11 @@ public class Bullet extends Weapon {
 
 	public void render(Graphics2D g) {
 		g.setColor(Color.WHITE);
-		g.fill(new Rectangle2D.Double((int) (hitbox.getX() + Game.scrollX), (int) (hitbox.getY() + Game.scrollY), 5,
-				5));
+		g.fill(hitbox);
 		tick();
 	}
 
 	public void tick() {
-		hitbox = new Rectangle2D.Double(hitbox.getX() + xv, hitbox.getY() + yv, hitbox.getWidth(), hitbox.getHeight());
+		hitbox = new Rectangle2D.Double(hitbox.getX() + xv+ Game.scrollX-1, hitbox.getY() + yv + Game.scrollY-1, hitbox.getWidth(), hitbox.getHeight());
 	}
 }

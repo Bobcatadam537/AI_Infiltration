@@ -4,7 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Line2D;
+import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
@@ -14,13 +16,15 @@ class Player extends Character {
 
 	boolean up, down, left, right, space;
 	int inv;
+	int shootSpeed;
 	Sword s;
-
+	ArrayList<Integer> powerups = new ArrayList<>();
 	public Player(int x, int y, int w, int h, Game g) {
 		super(x, y, w, h, g);
 		up = down = left = right = space = false;
 		angle = 0;
 		vx = vy = 0;
+		shootSpeed = 20;
 
 		s = new Sword(x, y, 16, w, this);
 		melee = new Line2D.Double(hitbox.getCenterX(), hitbox.getCenterY(), hitbox.getCenterX(), hitbox.getCenterY());
@@ -39,8 +43,9 @@ class Player extends Character {
 
 	public void render(Graphics2D g) {
 		g.setColor(new Color(255, 255, 255));
-		g.drawImage(sprites[d.dir][a.val], (int) (hitbox.getX() + Game.scrollX), (int) (hitbox.getY() + Game.scrollY),
-				16, 20, null);
+		g.drawImage(sprites[d.dir][a.val], (int)( hitbox.getX() +Game.scrollX), (int)( hitbox.getY()+Game.scrollY), (int) (hitbox.getX()+Game.scrollX-1) + W,
+				(int) (hitbox.getY()+Game.scrollY-1) + H, 0, 0, 16, 20, null);
+		g.fill(new Rectangle2D.Float((int)(hitbox.getX()+ Game.scrollX-1), (int)(hitbox.getY() +Game.scrollY-1), health/2, 3));
 
 		if (a == action.melee) {
 			s.render(g);
@@ -73,17 +78,22 @@ class Player extends Character {
 		if (vy != 0)
 			vx = vx / Math.sqrt(2);
 
-		for (int i = 0; i < 4; i++)
-			trigMove(vx, vy);
+		trigMove();
 
 		if (!(vy == vx && vy == 0))
 			angle = Math.atan2(vy, vx);
+
+		if (health <= 0) {
+
+			game.state = GameState.GAME_OVER;
+			
+		}
 	}
 
 	public void action() {
 		if (space)
 			if (w == weapon.gun)
-				shoot(20);
+				shoot(shootSpeed);
 			else if (w == weapon.sword)
 				melee(10);
 
@@ -91,9 +101,8 @@ class Player extends Character {
 			cooldown--;
 			if (a == action.melee) {
 				double newAngle = angle + Math.toRadians(45) - Math.toRadians(cooldown * 9);
-				melee = new Line2D.Double(hitbox.getCenterX() + Game.scrollX, hitbox.getCenterY() + Game.scrollY,
-						hitbox.getCenterX() + Game.scrollX + 20 * Math.cos(newAngle),
-						hitbox.getCenterY() + Game.scrollY + 20 * Math.sin(newAngle));
+				melee = new Line2D.Double(hitbox.getCenterX(), hitbox.getCenterY(),
+						hitbox.getCenterX() + 20 * Math.cos(newAngle), hitbox.getCenterY() + 20 * Math.sin(newAngle));
 			}
 		} else {
 			a = action.none;
