@@ -12,7 +12,7 @@ public class GameObject {
 	LinkedList<Line2D> touching;
 
 	public GameObject(int x, int y, int w, int h) {
-		hitbox = new Rectangle2D.Double(x, y, w, h);
+		hitbox = new Rectangle2D.Double((int)(x+ Game.scrollX-1),(int)(Game.scrollY-1), w, h);
 		touching = new LinkedList<Line2D>();
 	}
 
