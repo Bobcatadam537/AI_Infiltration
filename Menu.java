@@ -9,23 +9,33 @@ class Menu extends MouseAdapter {
 	Game game;
 	Font font;
 	FontMetrics metrics;
-
+	double gameW, gameH;
+		
 	public Menu(Game game) {
 		this.game = game;
 		font = new Font("courier new", 1, 50);
+		gameW = Game.resolution.getWidth() * game.scaleX;
+		gameH = Game.resolution.getHeight() * game.scaleY;
 	}
 
 	public void mousePressed(MouseEvent e) {
 		int mx = e.getX();
 		int my = e.getY();
-		if (mouseOver(mx, my, 300, 250, (int)(520*1.75), (int)(200*1.5))) {
+		
+		if(game.state == GameState.RUNNING) {
+			//game.p.mouseX = mx;
+			//game.p.mouseY = my;
+			//game.p.shootMouse(game.p.shootSpeed);
+		}
+		
+		if (mouseOver(mx, my, (int)gameW/6, (int)gameH/6, (int)(gameW*(2.0/3)), (int)(gameH/3))) {
 
 			if (game.state == GameState.MENU) {
 				game.state = GameState.RUNNING;
 				game.prevState = GameState.MENU;
 			}
 		}
-		if (mouseOver(mx, my, 300, 600, 910, 150)) {
+		if (mouseOver(mx, my, (int)gameW/6, (int)(gameH * (2.0/3)),  (int)(gameW*(2.0/3)), (int)(gameH/6))) {
 			if (game.state == GameState.MENU) {
 				game.state = GameState.INSTRUCTIONS;
 				game.prevState = GameState.MENU;
@@ -56,7 +66,7 @@ class Menu extends MouseAdapter {
 		if (mouseOver(mx, my, 100, 200, 600, 800)) {
 			if (game.state == GameState.POWERUP1) {
 				game.p.powerups.add(1);
-				game.p.s.length = 30;
+				game.p.s.damage = 100;
 
 				game.state = GameState.RUNNING;
 				game.prevState = GameState.POWERUP1;
@@ -88,16 +98,19 @@ class Menu extends MouseAdapter {
 
 
 	public void render(Graphics2D g) {
+		gameW = Game.resolution.getWidth() * game.scaleX;
+		gameH = Game.resolution.getHeight() * game.scaleY;
+
 		metrics = g.getFontMetrics(font);
 		if (game.state == GameState.MENU) {
 
 			g.setColor(new Color(255, 255, 255));
-			g.fill(new Rectangle2D.Float(300, 250, (int)(520*1.75), (int)(200*1.5)));
+			g.fill(new Rectangle2D.Float((int)gameW/6, (int)gameH/6, (int)(gameW*(2.0/3)), (int)(gameH/3)));
 
-			g.fill(new Rectangle2D.Float(300, 600, 910, 150));
+			g.fill(new Rectangle2D.Double(gameW/6, gameH * (2.0/3),  gameW*(2.0/3), gameH/6));
 			g.setColor(Color.red);
 			g.setFont(new Font("courier new", 1, 80));
-			g.drawString("Play", 720 - metrics.stringWidth("Play") / 2, 450 - metrics.getHeight() / 2);
+			g.drawString("Play", (int)(gameW/2) - metrics.stringWidth("Play") / 2, 450 - metrics.getHeight() / 2);
 			g.setFont(new Font("courier new", 1, 70));
 			g.drawString("Instructions", 700 - metrics.stringWidth("Instructions") / 2, 725 - metrics.getHeight() / 2);
 		}
@@ -106,8 +119,8 @@ class Menu extends MouseAdapter {
 
 	public void renderInstructions(Graphics2D g) {
 		g.setColor(Color.WHITE);
-		g.fill(new Rectangle2D.Float(100, 100, 1300, 750));
-		g.fill(new Rectangle2D.Float(100, 900, 1300, 100));
+		g.fill(new Rectangle2D.Float((int)gameW/12, (int)gameH/12, (int)(gameW* (5.0/6)), (int)(gameH*(9.0/12)) ));
+		g.fill(new Rectangle2D.Float((int)gameW/12, (int)(gameH*(21.0/24)), (int)(gameW* (10.0/12)), (int)(gameH*(1.0/12))));
 		g.setColor(Color.RED);
 		metrics = g.getFontMetrics(font);
 		g.setFont(new Font("courier new", 1, 60));
