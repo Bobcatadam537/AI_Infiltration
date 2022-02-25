@@ -332,6 +332,44 @@ public class Game extends Canvas implements Runnable {
 		} else if (state == GameState.POWERUP1) {
 			menu.renderPowerMenu1(menuG2D);
 		}
+		
+		menuG2D.setColor(Color.RED);
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX/2, 0), new Point2D.Double(width*scaleX/2, height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY/2), new Point2D.Double(width*scaleX, height*scaleY/2)));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX/3, 0), new Point2D.Double(width*scaleX/3, height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY/3), new Point2D.Double(width*scaleX, height*scaleY/3)));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX*(2.0/3), 0), new Point2D.Double(width*scaleX* (2.0/3), height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY * (2.0/3)), new Point2D.Double(width*scaleX, height*scaleY * (2.0/3))));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX/6, 0), new Point2D.Double(width*scaleX/6, height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY/6), new Point2D.Double(width*scaleX, height*scaleY/6)));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX*(5/6.0), 0), new Point2D.Double(width*scaleX*(5.0/6), height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY* (5.0/6)), new Point2D.Double(width*scaleX, height*scaleY*(5.0/6))));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX/12, 0), new Point2D.Double(width*scaleX/12, height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY/12), new Point2D.Double(width*scaleX, height*scaleY/12)));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX*(11.0/12), 0), new Point2D.Double(width*scaleX*(11.0/12), height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY* (11/12.0)), new Point2D.Double(width*scaleX, height*scaleY*(11.0/12))));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX/4, 0), new Point2D.Double(width*scaleX/4, height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY/4), new Point2D.Double(width*scaleX, height*scaleY/4)));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX*(3/4.0), 0), new Point2D.Double(width*scaleX*(3.0/4), height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY* (3/4.0)), new Point2D.Double(width*scaleX, height*scaleY*(3.0/4))));
+		
+		
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX*(7/12.0), 0), new Point2D.Double(width*scaleX*(7.0/12), height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY* (7.0/12)), new Point2D.Double(width*scaleX, height*scaleY*(7.0/12))));
+		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(width*scaleX*(5/12.0), 0), new Point2D.Double(width*scaleX*(5.0/12), height*scaleY)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, height*scaleY* (5.0/12)), new Point2D.Double(width*scaleX, height*scaleY*(5.0/12))));
+		
 
 		g2d.dispose();
 
