@@ -9,9 +9,12 @@ public class Weapon extends GameObject {
 	}
 
 	public boolean hitE(Enemy e) {
-		if (this.hitbox.intersects(e.hitbox)) {
-			return true;
-		}
-		return false;
+		return this.hitbox.intersects(e.hitbox);
+			
 	}
+	public boolean hitP(Player p) {
+		return this.hitbox.intersects(p.hitbox);
+			
+	}
+	
 }

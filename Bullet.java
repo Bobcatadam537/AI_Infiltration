@@ -8,11 +8,15 @@ public class Bullet extends Weapon {
 	double xv, yv;
 	double speed = 5;
 	Character shooter;
-
+	int damage;
+	int width;
+	int height;
 	public Bullet(int x, int y, double angle) {
 		super(x, y, 5, 5);
 		yv = speed * Math.sin(angle);
 		xv = speed * Math.cos(angle);
+		damage = 20;
+		width = height = 5;
 	}
 
 	public Bullet(Character s, int x, int y, double angle) {
@@ -20,6 +24,9 @@ public class Bullet extends Weapon {
 		yv = speed * Math.sin(angle);
 		xv = speed * Math.cos(angle);
 		shooter = s;
+		damage = 20;
+		width = height = 5;
+
 	}
 
 	public void reset(int x, int y) {
@@ -28,9 +35,10 @@ public class Bullet extends Weapon {
 
 	public void render(Graphics2D g) {
 		g.setColor(Color.WHITE);
-		g.fill(new Rectangle2D.Double((int) (hitbox.getX() + Game.scrollX), (int) (hitbox.getY() + Game.scrollY), 5,
-				5));
-		tick();
+		if(damage != 0) {
+		g.fill(new Rectangle2D.Double((int) (hitbox.getX() + Game.scrollX), (int) (hitbox.getY() + Game.scrollY), width,
+				height));
+		tick();}
 	}
 
 	public void tick() {

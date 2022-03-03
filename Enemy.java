@@ -3,6 +3,7 @@ package game;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Collections;
@@ -13,17 +14,20 @@ import javax.imageio.ImageIO;
 
 public class Enemy extends Character {
 	int type;
+	Sword s;
 	boolean alive;
 	boolean loaded = false;
 	pNode[][] pathfinding;
 	pNode nodePath;
 	int pathfindingCooldown = 5;
+	int health;
 
 	public Enemy(int x, int y, int w, int h, Game g) {
 		super(x, y, w, h, g);
 		type = 1;
 		alive = true;
 		cooldown = 0;
+		health = 50;
 		vx = vy = 0;
 		sprites = new Image[32][5];
 		try {
@@ -38,15 +42,20 @@ public class Enemy extends Character {
 	public Enemy(int x, int y, int w, int h, int t, Game g) {
 		super(x, y, w, h, g);
 		type = t;
+		s = new Sword(x, y, 16, w, this);
 		alive = true;
+		if (t == 2)health = 100;
+		else health = 50;
+		cooldown = 0;
 		vx = vy = 0;
+		sprites = new Image[32][5];
 		try {
-			sprites = Game.generateSprites(sprites, ImageIO.read(getClass().getResource("/game/spriteSheets/Test.png")),
-					16, 20);
+			sprites = Game.generateSprites(sprites,
+					ImageIO.read(getClass().getResourceAsStream("/game/spriteSheets/test.png")), 16, 20);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		pathfinding = pNode.copy(game.walkable);
+		pathfinding = null;
 	}
 
 	public void render(Graphics2D g) {
@@ -56,6 +65,10 @@ public class Enemy extends Character {
 			g.setColor(Color.BLUE);
 			loaded = true;
 		}
+		g.fill(new Rectangle2D.Float((int) (hitbox.getX() + Game.scrollX - 1), (int) (hitbox.getY() + Game.scrollY - 1),
+				health / 2, 3));
+		
+		if(type == 3)s.render(g);
 		if (loaded)
 			tick();
 		damage();
@@ -87,7 +100,14 @@ public class Enemy extends Character {
 	}
 
 	public void attack() {
-		shoot(30);
+		if(type != 3) {
+		shoot(30);}
+		if(type == 3) {
+			double newAngle = angle + Math.toRadians(45) - Math.toRadians(cooldown * 9);
+			melee = new Line2D.Double(hitbox.getCenterX(), hitbox.getCenterY(),
+					hitbox.getCenterX() + 20 * Math.cos(newAngle), hitbox.getCenterY() + 20 * Math.sin(newAngle));
+			melee(10);
+		}
 		cooldown--;
 	}
 
@@ -152,9 +172,19 @@ public class Enemy extends Character {
 		if (nodePath != null) {
 			aimAt(nodePath.maxParent(this));
 		}
-		trigMove();
+		if(type != 2)trigMove();
 		aimAt(game.p);
+		if(type == 2) {attack();}
+		
 		attack();
 		getDirection();
 	}
+	
+	public void takeDamage(int damage) {
+		health -= damage;
+		if(health < 0) {
+			alive = false;
+		}
+	}
+	
 }

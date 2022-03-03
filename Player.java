@@ -7,8 +7,10 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.awt.event.*;
 import javax.imageio.ImageIO;
+//import java.awt.geom.Point2D;
+
 
 class Player extends Character {
 	// does not utilize the velocity or angle how the A.I. classes do.
@@ -17,15 +19,20 @@ class Player extends Character {
 	boolean up, down, left, right, space;
 	int inv;
 	int shootSpeed;
+	//double cx, cy;
+	
 	Sword s;
 	ArrayList<Integer> powerups = new ArrayList<>();
-
+	MouseInput m = new MouseInput(this);
+	int mouseX, mouseY;
+	double shootAngle;
 	public Player(int x, int y, int w, int h, Game g) {
 		super(x, y, w, h, g);
 		up = down = left = right = space = false;
 		angle = 0;
 		vx = vy = 0;
 		shootSpeed = 20;
+		
 
 		s = new Sword(x, y, 16, w, this);
 		melee = new Line2D.Double(hitbox.getCenterX(), hitbox.getCenterY(), hitbox.getCenterX(), hitbox.getCenterY());
@@ -55,6 +62,12 @@ class Player extends Character {
 			g.setColor(Color.white);
 			g.draw(melee);
 		}
+//		g.draw(new Line2D.Double(new Point2D.Double(hitbox.getCenterX() + Game.scrollX-1,hitbox.getCenterY()+Game.scrollY-1), new Point2D.Double(m.mx+ Game.scrollX-1, hitbox.getCenterY()+ Game.scrollY-1)));
+//		g.draw(new Line2D.Double(new Point2D.Double(hitbox.getCenterX()+Game.scrollX-1,hitbox.getCenterY()+Game.scrollY-1), new Point2D.Double(hitbox.getCenterX()+Game.scrollX-1, m.my+ Game.scrollY-1)));
+//
+
+		
+		
 		getDirection();
 		tick();
 	}
@@ -94,15 +107,24 @@ class Player extends Character {
 			game.state = GameState.GAME_OVER;
 
 		}
+		
+		//shootAngle = Math.atan2(mouseY - hitbox.getCenterY(), mouseX - hitbox.getCenterX());
+		
+	}
+	
+	public double findShootAngle() {
+		shootAngle = Math.tan((mouseX-hitbox.getCenterY())/(mouseY-hitbox.getCenterY()));
+		
+		return shootAngle;
 	}
 
 	public void action() {
-		if (space)
+		if (space) {
 			if (w == weapon.gun)
-				shoot(shootSpeed);
-			else if (w == weapon.sword)
+				shootMouse(shootSpeed, m.findAngle());
+			if (w == weapon.sword)
 				melee(10);
-
+		}
 		if (cooldown > 0) {
 			cooldown--;
 			if (a == action.melee) {
@@ -114,7 +136,10 @@ class Player extends Character {
 			a = action.none;
 		}
 	}
-
+	public void reset(int x, int y) {
+		hitbox = new Rectangle2D.Double(360-8,1540, hitbox.getWidth(), hitbox.getHeight());
+		health = 50;
+	}
 	public void damage(int val) {
 		if (inv == 0) {
 			health -= val;
@@ -122,4 +147,67 @@ class Player extends Character {
 		} else
 			inv = 0;
 	}
+}
+
+class MouseInput extends MouseAdapter{
+	double mx;
+	double my;
+	double angle;
+	double cx,cy;
+	//Game game;
+	Player p;
+	public MouseInput(Player player){
+		p = player;
+		cx = 0;
+		cy = 0;
+	}
+	
+	public void mousePressed(MouseEvent e) {
+		mx = e.getX();
+		my = e.getY();
+		
+		p.space = true;	
+		
+		//p.shootMouse(10, findAngle());
+	}
+	
+	public double findAngle() {
+		cx = (Game.resolution.getWidth()* (p.game.scaleX))/2;
+		cy = (Game.resolution.getHeight()* (p.game.scaleY))/2;
+		
+		
+		//double dx;
+		//double dy;
+		
+		
+//		if(mx >= cx && my <= cy) {
+//			dx = mx-cx;
+//			dy = cy-my;
+//			angle = Math.atan(dx/dy);
+//		}
+//		else if (mx < cx && my <= cy) {
+//			dx = cx-mx;
+//			dy = cy-my;
+//			angle = .5*Math.PI + Math.atan(dx/dy);
+//		}
+//		else if(mx <= cx && my > cy) {
+//			dx = cx - mx;
+//			dy = my - cy;
+//			angle = Math.PI + Math.atan(dx/dy);
+//		}
+//		else {
+//			dx = mx - cx;`
+//			dy = my - cy;
+//			angle = 2*Math.PI-Math.atan(dx/dy);
+//		}
+		angle = Math.atan2(my-cy, mx-cx);
+
+		//System.out.println(angle * (180/Math.PI));
+		return angle;
+	}
+	
+	public void mouseReleased(MouseEvent e) {
+		p.space = false;
+	}
+	
 }

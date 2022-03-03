@@ -34,6 +34,9 @@ public class GameObject {
 	public void aimAt(GameObject o) {
 		angle = Math.atan2(o.hitbox.getCenterY() - hitbox.getCenterY(), o.hitbox.getCenterX() - hitbox.getCenterX());
 	}
+	
+	
+	
 
 	public boolean onScreen() {
 		return hitbox.getMinX() + Game.scrollX < 240 && hitbox.getMaxX() + Game.scrollX > 0
