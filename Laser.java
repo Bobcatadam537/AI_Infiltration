@@ -1,6 +1,8 @@
 package game;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.Rectangle2D;
 //import java.awt.geom.Rectangle2D;
 
@@ -20,33 +22,34 @@ public class Laser {
 		beam = new GameObject(x, y + (int) (w * .33), d, 5);
 		deactivated1 = deactivated2 = false;
 		game = g;
-		// TODO Auto-generated constructor stub
 	}
 
 	public void render(Graphics2D g) {
 		g.setColor(Color.WHITE);
-		
-		
-		if(deactivated1)
-		g.setColor(Color.BLACK);
-		
-		g.fill(new Rectangle2D.Double(hit1.hitbox.getX() + Game.scrollX-1, hit1.hitbox.getY() + Game.scrollY-1, hit1.hitbox.getWidth(), hit1.hitbox.getHeight()));
-		
-		g.setColor(Color.WHITE);	
-		if(deactivated2)
-		g.setColor(Color.BLACK);
-		g.fill(new Rectangle2D.Double(hit2.hitbox.getX() + Game.scrollX-1, hit2.hitbox.getY() + Game.scrollY-1, hit2.hitbox.getWidth(), hit2.hitbox.getHeight()));
+
+		if (deactivated1)
+			g.setColor(Color.BLACK);
+
+		g.fill(new Rectangle2D.Double(hit1.hitbox.getX() + Game.scrollX - 1, hit1.hitbox.getY() + Game.scrollY - 1,
+				hit1.hitbox.getWidth(), hit1.hitbox.getHeight()));
+
+		g.setColor(Color.WHITE);
+		if (deactivated2)
+			g.setColor(Color.BLACK);
+		g.fill(new Rectangle2D.Double(hit2.hitbox.getX() + Game.scrollX - 1, hit2.hitbox.getY() + Game.scrollY - 1,
+				hit2.hitbox.getWidth(), hit2.hitbox.getHeight()));
 
 		g.setColor(Color.WHITE);
 
 //		g.fill(	new Rectangle2D.Double(beam.hitbox.getX() + Game.scrollX-1, beam.hitbox.getY() + Game.scrollY-1, beam.hitbox.getWidth(), beam.hitbox.getHeight()));
 		try {
 			Image i = ImageIO.read(getClass().getResourceAsStream("/game/spriteSheets/laserBeam.png"));
-			g.drawImage(i, (int)(beam.hitbox.getX( )+Game.scrollX-1), (int)(beam.hitbox.getY()+ Game.scrollY-1), (int)beam.hitbox.getWidth(), (int)beam.hitbox.getHeight(),  null);
+			g.drawImage(i, (int) (beam.hitbox.getX() + Game.scrollX - 1), (int) (beam.hitbox.getY() + Game.scrollY - 1),
+					(int) beam.hitbox.getWidth(), (int) beam.hitbox.getHeight(), null);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
-		}	
+		}
 		tick();
 
 	}
@@ -68,9 +71,8 @@ public class Laser {
 		collideV(hit2);
 		collideH(hit1);
 		collideH(hit2);
-		
+
 		collideV(beam);
-		
 
 	}
 
@@ -84,22 +86,15 @@ public class Laser {
 			}
 		}
 	}
+
 	public void collideH(GameObject g) {
 		if (g.hitbox.intersects(game.p.hitbox)) {
 
-		if (game.p.hitbox.getCenterX() < g.hitbox.getCenterX()) {
-			game.p.trigMove(-1.5, 0);
-		} else {
-			game.p.trigMove(1.5, 0);
-		}}
+			if (game.p.hitbox.getCenterX() < g.hitbox.getCenterX()) {
+				game.p.trigMove(-1.5, 0);
+			} else {
+				game.p.trigMove(1.5, 0);
+			}
+		}
 	}
-	
-
-	public void scroll(double scrollX, double scrollY) {
-		// hit1.scroll(scrollX, scrollY);
-		// hit2.scroll(scrollX, scrollY);
-		// beam.scroll(scrollX, scrollY);
-
-	}
-
 }

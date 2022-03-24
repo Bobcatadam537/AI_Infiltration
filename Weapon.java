@@ -2,6 +2,7 @@ package game;
 
 public class Weapon extends GameObject {
 	boolean selected;
+	int damage;
 
 	public Weapon(int x, int y, int w, int h) {
 		super(x, y, w, h);
@@ -9,12 +10,9 @@ public class Weapon extends GameObject {
 	}
 
 	public boolean hitE(Enemy e) {
-		return this.hitbox.intersects(e.hitbox);
-			
+		if (this.hitbox.intersects(e.hitbox)) {
+			return true;
+		}
+		return false;
 	}
-	public boolean hitP(Player p) {
-		return this.hitbox.intersects(p.hitbox);
-			
-	}
-	
 }
