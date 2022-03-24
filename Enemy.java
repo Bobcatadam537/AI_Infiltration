@@ -3,14 +3,13 @@ package game;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
+import game.Effect.effectType;
 
 public class Enemy extends Character {
 	int type;
@@ -20,6 +19,7 @@ public class Enemy extends Character {
 	pNode[][] pathfinding;
 	pNode nodePath;
 	int pathfindingCooldown = 5;
+	double ani = 0;
 	int health;
 
 	public Enemy(int x, int y, int w, int h, Game g) {
@@ -27,12 +27,10 @@ public class Enemy extends Character {
 		type = 1;
 		alive = true;
 		cooldown = 0;
-		health = 50;
 		vx = vy = 0;
 		sprites = new Image[32][5];
 		try {
-			sprites = Game.generateSprites(sprites,
-					ImageIO.read(getClass().getResourceAsStream("/game/spriteSheets/test.png")), 16, 20);
+			sprites = Game.generateSprites(sprites, "/game/spriteSheets/test.png", 16, 20);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -40,35 +38,23 @@ public class Enemy extends Character {
 	}
 
 	public Enemy(int x, int y, int w, int h, int t, Game g) {
-		super(x, y, w, h, g);
+		this(x, y, w, h, g);
 		type = t;
-		s = new Sword(x, y, 16, w, this);
-		alive = true;
-		if (t == 2)health = 100;
-		else health = 50;
-		cooldown = 0;
-		vx = vy = 0;
-		sprites = new Image[32][5];
-		try {
-			sprites = Game.generateSprites(sprites,
-					ImageIO.read(getClass().getResourceAsStream("/game/spriteSheets/test.png")), 16, 20);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		pathfinding = null;
 	}
 
 	public void render(Graphics2D g) {
+		updateRenderPosition();
 		if (alive && onScreen()) {
-			g.drawImage(sprites[d.dir][a.val], (int) (hitbox.getX() + Game.scrollX),
-					(int) (hitbox.getY() + Game.scrollY), W, H, null);
+			System.out.println(hitbox.getX() + ", " + hitbox.getY());
+			Game.drawImage(sprites[direction.val + ((int) ani)][action.val], Xshifted, Yshifted, w, h, g);
 			g.setColor(Color.BLUE);
 			loaded = true;
 		}
 		g.fill(new Rectangle2D.Float((int) (hitbox.getX() + Game.scrollX - 1), (int) (hitbox.getY() + Game.scrollY - 1),
 				health / 2, 3));
-		
-		if(type == 3)s.render(g);
+
+		if (type == 3)
+			s.render(g);
 		if (loaded)
 			tick();
 		damage();
@@ -94,20 +80,26 @@ public class Enemy extends Character {
 			}
 		}
 		if (!alive) {
-			hitbox = new Rectangle2D.Double(hitbox.getWidth(), hitbox.getHeight(), Integer.MAX_VALUE,
-					Integer.MAX_VALUE);
+			hitbox = new Rectangle2D.Double(0, 0, 0, 0);
+		}
+	}
+
+	public void die() {
+		if (alive) {
+			game.effects.add(new Effect(hitbox, effectType.explosion));
+			alive = false;
+		}
+	}
+
+	public void takeDamage(int damage) {
+		health -= damage;
+		if (health < 0) {
+			alive = false;
 		}
 	}
 
 	public void attack() {
-		if(type != 3) {
-		shoot(30);}
-		if(type == 3) {
-			double newAngle = angle + Math.toRadians(45) - Math.toRadians(cooldown * 9);
-			melee = new Line2D.Double(hitbox.getCenterX(), hitbox.getCenterY(),
-					hitbox.getCenterX() + 20 * Math.cos(newAngle), hitbox.getCenterY() + 20 * Math.sin(newAngle));
-			melee(10);
-		}
+		shoot(30);
 		cooldown--;
 	}
 
@@ -163,6 +155,7 @@ public class Enemy extends Character {
 	}
 
 	public void tick() {
+		// pathfinding stuff
 		if (pathfindingCooldown <= 0) {
 			findPath();
 			pathfindingCooldown = 10;
@@ -172,19 +165,15 @@ public class Enemy extends Character {
 		if (nodePath != null) {
 			aimAt(nodePath.maxParent(this));
 		}
-		if(type != 2)trigMove();
+		// animation stuff
+		if (ani + 0.1 > 4)
+			ani = 0;
+		else
+			ani += 0.1;
+		// attacking and moving stuff
+		trigMove();
 		aimAt(game.p);
-		if(type == 2) {attack();}
-		
 		attack();
 		getDirection();
 	}
-	
-	public void takeDamage(int damage) {
-		health -= damage;
-		if(health < 0) {
-			alive = false;
-		}
-	}
-	
 }

@@ -8,13 +8,13 @@ public class Background extends GameObject {
 	Image image;
 
 	public Background(Image i, int x, int y) {
-		super(x, y, 0, 0);
+		super(x - 1, y - 1, i.getWidth(null), i.getHeight(null));
 		image = i;
-		hitbox.setRect(x, y, image.getWidth(null), image.getHeight(null));
+		hitbox.setRect(x, y, w, h);
 	}
 
 	public void render(Graphics2D g) {
-		g.drawImage(image, (int) (hitbox.getX()+ Game.scrollX -1), (int) (hitbox.getY()+Game.scrollY-1), image.getWidth(null), image.getHeight(null), null);
-		//System.out.println(image.getWidth(null) + " " + image.getHeight(null));
+		updateRenderPosition();
+		Game.drawImage(image, Xshifted, Yshifted, w, h, g);
 	}
 }

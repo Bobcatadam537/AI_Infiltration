@@ -10,7 +10,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
-//import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
@@ -28,18 +27,20 @@ enum GameState {
 	MENU, RUNNING, GAME_OVER, INSTRUCTIONS, PAUSE, POWERUPDISPLAY, POWERUP1, POWERUP2, POWERUP3
 }
 
-enum Level{
-	ONE, TWO, THREE, FOUR, FIVE, SIX
+enum Level {
+	ONE(1), TWO(2), THREE(3), FOUR(4), FIVE(5), SIX(6);
+
+	int val;
+
+	Level(int i) {
+		val = i;
+	}
 }
 
 public class Game extends Canvas implements Runnable {
-	/**
-	 * 
-	 */
-
 	GameState state = GameState.MENU;
-	int level = 1;
 	GameState prevState = GameState.GAME_OVER;
+	Level level = Level.ONE;
 
 	Menu menu = new Menu(this);
 	Font font;
@@ -47,66 +48,66 @@ public class Game extends Canvas implements Runnable {
 
 	Player p;
 	Door d;
-	
-	//int level;
-	LinkedList<Enemy> enemies;
-	Background bg;
-	Background lv1;
-	Background lv3;
-	ArrayList<Solid> solids = new ArrayList<Solid>();
-	
-	ArrayList<Laser> lasers = new ArrayList<Laser>();
 
+	Background lv1, lv2, lv3;
+
+	ArrayList<Solid> solids = new ArrayList<Solid>();
+	LinkedList<Enemy> enemies = new LinkedList<Enemy>();
+	ArrayList<Laser> lasers = new ArrayList<Laser>();
 	LinkedList<Bullet> bullets = new LinkedList<Bullet>();
+	LinkedList<Effect> effects = new LinkedList<Effect>();
 
 	pNode[][] walkable = new pNode[0][0];
 	int cooldown = 2000;
 	static final int pNodeSize = 10;
 	private static final long serialVersionUID = 1L;
-	// static final Dimension resolution = new Dimension(240, 160);
-	final static Dimension resolution = new Dimension(240, 160);
+	Dimension resolution;
 	static final Rectangle2D screen = new Rectangle2D.Float(0, 0, 240, 160);
-	Dimension currentSize = getSize();
 	double scaleX, scaleY;
 	static double scrollX, scrollY;
 	private Thread thread;
 	boolean running = false;
 	Window w;
-	double width, height;
-	
+
 	public Game() {
 		font = new Font("courier new", 1, 50);
 
-		p = new Player(360 - 8, 1560, 16, 20, this);
-		enemies = new LinkedList<Enemy>();
+		p = new Player(360 - 8, 1560, this);
 		enemies.add(new Enemy(300, 900, 16, 20, this));
 
-
 		try {
-			bg = new Background(ImageIO.read(getClass().getResourceAsStream("/game/backgrounds/Tutorial.png")), 0, 0);
-			 lv1 = new
-			 Background(ImageIO.read(getClass().getResourceAsStream("/game/backgrounds/lv3.png")),
-			 0, 0);
-			 lv3 = new
-			 Background(ImageIO.read(getClass().getResourceAsStream("/game/backgrounds/lv3.png")),
-			 0, 0);
+			lv1 = new Background(Game.generateSprite("/game/backgrounds/Tutorial.png"), 0, 0);
+			lv2 = new Background(Game.generateSprite("/game/backgrounds/lv2.png"), 0, 0);
+			lv3 = new Background(Game.generateSprite("/game/backgrounds/lv3.png"), 0, 0);
 
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		d = new Door((int) (bg.hitbox.getCenterX()-(75/2)), (int) (bg.hitbox.getY() + 100), 75, 75, this, 1);
-		//d2 = new Door((int) (d.hitbox.getCenterX() + 990), (int) (d.hitbox.getCenterY()), 20, 20, this, 1);
+
+		d = new Door((int) lv1.x / 2 - (75 / 2), (int) lv1.y + 100, 75, 75, this, 1);
 		scaleX = scaleY = 1;
-		w = new Window((int) resolution.getWidth(), (int) resolution.getHeight(), "Game", this);
-		width = resolution.getWidth();
-		height = resolution.getHeight();
-		this.addKeyListener(new KeyInput(p));
+		w = new Window((int) screen.getWidth(), (int) screen.getHeight(), "Game", this);
+		resolution = new Dimension(w.getWidth(), w.getHeight());
 		this.addMouseListener(menu);
 		this.addMouseListener(p.m);
-		//this.addMouseListener();
 	}
 
 	public synchronized void start() {
+		buildLvl1();
+
+		thread = new Thread(this);
+		thread.start();
+		running = true;
+	}
+
+	public void buildLvl1() {
+		solids = new ArrayList<Solid>();
+		enemies = new LinkedList<Enemy>();
+		lasers = new ArrayList<Laser>();
+		bullets = new LinkedList<Bullet>();
+		effects = new LinkedList<Effect>();
+		level = Level.ONE;
+
 		ArrayList<Point2D> tempPoints = new ArrayList<Point2D>();
 		tempPoints.add(new Point2D.Double(302, 36));
 		tempPoints.add(new Point2D.Double(417, 36));
@@ -171,41 +172,18 @@ public class Game extends Canvas implements Runnable {
 		tempPoints.add(new Point2D.Double(168, 499));
 		tempPoints.add(new Point2D.Double(168, 460));
 		solids.add(new Solid(tempPoints, true));
-		//makeLvl1();
 
-		walkable = new pNode[(int) (bg.hitbox.getWidth() / pNodeSize)][(int) (bg.hitbox.getHeight() / pNodeSize)];
-
-		for (int row = 0; row < walkable.length; row++) {
-
-			for (int col = 0; col < bg.hitbox.getHeight() / pNodeSize; col++) {
-
-				GameObject temp = new GameObject(row * pNodeSize, col * pNodeSize, pNodeSize, pNodeSize);
-
-				walkable[row][col] = new pNode(row, col, temp.collide(solids).size() == 0);
-
-			}
-
-		}
-
-		pNode.linkNodes(walkable);
-
-		for (Enemy e : enemies) {
-
-			e.loadPathfinding();
-
-		}
-
-		thread = new Thread(this);
-		thread.start();
-		running = true;
+		buildPathfinding();
 	}
 
-	public void makeLvl2() {
-	
-		solids.removeAll(solids);
-		enemies.removeAll(enemies);
-		lasers.removeAll(lasers);
-		bullets.removeAll(bullets);
+	public void buildLvl2() {
+		solids = new ArrayList<Solid>();
+		enemies = new LinkedList<Enemy>();
+		lasers = new ArrayList<Laser>();
+		bullets = new LinkedList<Bullet>();
+		effects = new LinkedList<Effect>();
+		level = Level.TWO;
+
 		ArrayList<Point2D> tempPoints = new ArrayList<Point2D>();
 		tempPoints.add(new Point2D.Double(302, 1565));
 		tempPoints.add(new Point2D.Double(417, 1565));
@@ -231,12 +209,12 @@ public class Game extends Canvas implements Runnable {
 
 		tempPoints.add(new Point2D.Double(1508, 1210));
 		// solids.add(new Solid(tempPoints));
-		lasers.add(new Laser(191, 1200, 30, 30, (528-191-30), this));
-		lasers.add(new Laser(191, 1100, 30, 30, (528-191-30), this));
-		lasers.add(new Laser(191, 1000, 30, 30, (528-191-30), this));
-		
-		enemies.add(new Enemy(300, 1150, 20, 20,2, this));
-		
+		lasers.add(new Laser(191, 1200, 30, 30, (528 - 191 - 30), this));
+		lasers.add(new Laser(191, 1100, 30, 30, (528 - 191 - 30), this));
+		lasers.add(new Laser(191, 1000, 30, 30, (528 - 191 - 30), this));
+
+		enemies.add(new Enemy(300, 1150, 20, 20, 2, this));
+
 		enemies.add(new Enemy(200, 800, 20, 20, 3, this));
 		enemies.add(new Enemy(400, 800, 20, 20, 3, this));
 		enemies.add(new Enemy(200, 700, 20, 20, 3, this));
@@ -244,33 +222,31 @@ public class Game extends Canvas implements Runnable {
 
 		enemies.add(new Enemy(200, 300, 40, 40, 2, this));
 		enemies.add(new Enemy(500, 300, 40, 40, 2, this));
-		
-		lasers.add(new Laser(264, 150, 20, 20, (455-264-20), this));
-		
-		walkable = new pNode[(int) (bg.hitbox.getWidth() / pNodeSize)][(int) (bg.hitbox.getHeight() / pNodeSize)];
 
+		lasers.add(new Laser(264, 150, 20, 20, (455 - 264 - 20), this));
+
+		buildPathfinding();
+	}
+
+	public void buildLvl3() {
+		System.out.println("LEVEL 3 UNDER CONSTRUCTION");
+	}
+
+	public void buildPathfinding() {
+		walkable = new pNode[(int) (lv1.hitbox.getWidth() / pNodeSize)][(int) (lv1.hitbox.getHeight() / pNodeSize)];
 		for (int row = 0; row < walkable.length; row++) {
-
-			for (int col = 0; col < bg.hitbox.getHeight() / pNodeSize; col++) {
-
+			for (int col = 0; col < lv1.hitbox.getHeight() / pNodeSize; col++) {
 				GameObject temp = new GameObject(row * pNodeSize, col * pNodeSize, pNodeSize, pNodeSize);
-
 				walkable[row][col] = new pNode(row, col, temp.collide(solids).size() == 0);
-
 			}
 		}
-
 		pNode.linkNodes(walkable);
 
 		for (Enemy e : enemies) {
-
 			e.loadPathfinding();
-
 		}
-		}
-	public void makeLvl3() {
-		
 	}
+
 	public synchronized void stop() {
 		try {
 			thread.join();
@@ -283,30 +259,8 @@ public class Game extends Canvas implements Runnable {
 	public void run() {
 		Timer renderTimer = new Timer("render");
 		TimerTask RENDER = new RenderTask(this, renderTimer);
-
-		long lastTime = System.nanoTime();
-		double amountOfTicks = 60.0;
-		double ns = 1000000000 / amountOfTicks;
-		double delta = 0;
-		long timer = System.currentTimeMillis();
-		//int frames = 0;
 		renderTimer.schedule(RENDER, 17);
 		while (running) {
-			long now = System.nanoTime();
-			delta += (now - lastTime) / ns;
-			lastTime = now;
-			while (delta >= 1) {
-				tick();
-				delta--;
-			}
-//			if (running)
-//				render();
-			//frames++;
-			if (System.currentTimeMillis() - timer > 1000) {
-				timer += 1000;
-				//System.out.println("FPS: " + frames);
-				//frames = 0;
-			}
 
 		}
 		stop();
@@ -318,45 +272,39 @@ public class Game extends Canvas implements Runnable {
 			this.createBufferStrategy(3);
 			return;
 		}
-		currentSize = getSize();
-		currentSize.setSize(currentSize.width, currentSize.width);
+		resolution.setSize(w.getWidth(), w.getHeight());
 		Graphics2D g2d = (Graphics2D) bs.getDrawGraphics();
 		Graphics g = bs.getDrawGraphics();
 
 		Graphics2D menuG2D = (Graphics2D) g;
 
 		// if ratio is greater than 1.5, it is too wide. if it is less than 1.5, it is
-		// if ratio is greater than 1.5, it is too wide. if it is less than 1.5, it is
 		// too tall
-		if ((currentSize.width + 0.0) / currentSize.height > 1.5) {
-			scaleX = (currentSize.height * 1.5) / resolution.getWidth();
-			scaleY = (currentSize.height + 0.0) / resolution.getHeight();
-//			g2d.scale((currentSize.height * 1.5) / resolution.width, (currentSize.height + 0.0) / resolution.height);
-		} else if ((currentSize.width + 0.0) / currentSize.height < 1.5) {
-			scaleX = (currentSize.width + 0.0) / resolution.getWidth();
-			scaleY = (currentSize.width / 1.5) / resolution.getHeight();
-//			g2d.scale((currentSize.width + 0.0) / resolution.width, (currentSize.width / 1.5) / resolution.height);
+		if ((resolution.width + 0.0) / resolution.height > 1.5) {
+			scaleX = (resolution.height * 1.5) / screen.getWidth();
+			scaleY = (resolution.height + 0.0) / screen.getHeight();
+//			g2d.scale((resolution.height * 1.5) / screen.width, (resolution.height + 0.0) / screen.height);
+		} else if ((resolution.width + 0.0) / resolution.height < 1.5) {
+			scaleX = (resolution.width + 0.0) / screen.getWidth();
+			scaleY = (resolution.width / 1.5) / screen.getHeight();
+//			g2d.scale((resolution.width + 0.0) / screen.width, (resolution.width / 1.5) / screen.height);
 		} else {
-			scaleX = (currentSize.width + 0.0) / resolution.getWidth();
-			scaleY = (currentSize.height + 0.0) / resolution.getHeight();
-//			g2d.scale((currentSize.width + 0.0) / resolution.width, (currentSize.height + 0.0) / resolution.height);
+			scaleX = (resolution.width + 0.0) / screen.getWidth();
+			scaleY = (resolution.height + 0.0) / screen.getHeight();
+//			g2d.scale((resolution.width + 0.0) / screen.width, (resolution.height + 0.0) / screen.height);
 		}
 		g2d.scale(scaleX, scaleY);
 
 		g2d.setColor(Color.BLACK);
 		g2d.fill(screen);
 
-
-		//menuG2D.draw(new Line2D.Double(new Point2D.Double(*scaleX/2, 0), new Point2D.Double(getSize().width/2, height)));
-
-		
 		if (p.health <= 0)
 			state = GameState.GAME_OVER;
 
 		if (state == GameState.MENU) {
 
 			menu.render(menuG2D);
-			
+
 		}
 
 		if (state == GameState.INSTRUCTIONS) {
@@ -368,24 +316,20 @@ public class Game extends Canvas implements Runnable {
 
 			renderGame(g2d);
 			menuG2D.setColor(Color.WHITE);
-			menuG2D.fill(new Rectangle2D.Float((int)(getSize().width * (21.0/24)), (int)(getSize().height * (1.0/24)), (int)(getSize().width/12),(int)(getSize().width/12)));
+			menuG2D.fill(new Rectangle2D.Float(1350, 50, 100, 100));
 
 			metrics = menuG2D.getFontMetrics(font);
 			menuG2D.setFont(new Font("courier new", 1, 30));
-			menuG2D.drawString("" + (resolution.getWidth() + ", " + resolution.getHeight()), 100, 100);
-			menuG2D.drawString("" + (resolution.getWidth() * scaleX + ", " + resolution.getHeight()*scaleY), 100, 500);
-			
-			menuG2D.drawString((""+ scaleX + ", " + scaleY), 100, 200);
-			menuG2D.drawString((""+ width + ", " + height), 100, 300);
-			menuG2D.drawString((""+ p.m.cx + ", " + p.m.cy), 100, 400);
-			
-			
+			menuG2D.drawString("" + (screen.getWidth() + ", " + screen.getHeight()), 100, 100);
+			menuG2D.drawString("" + (screen.getWidth() * scaleX + ", " + screen.getHeight() * scaleY), 100, 500);
+
+			menuG2D.drawString(("" + scaleX + ", " + scaleY), 100, 200);
+			menuG2D.drawString(("" + 240 + ", " + 160), 100, 300);
+			menuG2D.drawString(("" + p.m.cx + ", " + p.m.cy), 100, 400);
+
 			menuG2D.draw(new Line2D.Double(new Point2D.Double(p.m.cx, p.m.cy), new Point2D.Double(p.m.mx, p.m.my)));
 			menuG2D.draw(new Line2D.Double(new Point2D.Double(p.m.cx, p.m.cy), new Point2D.Double(p.m.mx, p.m.cy)));
 			menuG2D.draw(new Line2D.Double(new Point2D.Double(p.m.cx, p.m.cy), new Point2D.Double(p.m.cx, p.m.my)));
-
-			//g2d.draw(new Line2D.Double(new Point2D.Double((p.hitbox.getCenter`X()+ scrollX-1), (p.hitbox.getCenterY())+scrollY-1), new Point2D.Double(p.mouseX + scrollX-1, p.mouseY + scrollY-1)));
-			
 		}
 
 		else if (state == GameState.PAUSE) {
@@ -395,62 +339,74 @@ public class Game extends Canvas implements Runnable {
 		}
 
 		else if (state == GameState.GAME_OVER) {
-
 			menu.renderGameOver(menuG2D);
-			// stop();
-
 		} else if (state == GameState.POWERUP1) {
 			menu.renderPowerMenu1(menuG2D);
+		} else if (state == GameState.POWERUP2) {
+			menu.renderPowerMenu2(menuG2D);
+		} else if (state == GameState.POWERUPDISPLAY) {
+			menu.renderPowerDisplay(menuG2D);
 		}
-	 else if (state == GameState.POWERUP2) {
-		menu.renderPowerMenu2(menuG2D);
-	}
-	 else if (state == GameState.POWERUPDISPLAY) {
-		menu.renderPowerDisplay(menuG2D);
-	}
-	
-	
-		
+
 		menuG2D.setColor(Color.RED);
 
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width/2, 0), new Point2D.Double(getSize().width/2, getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height/2), new Point2D.Double(getSize().width, getSize().height/2)));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width/3, 0), new Point2D.Double(getSize().width/3, getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height/3), new Point2D.Double(getSize().width, getSize().height/3)));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width*(2.0/3), 0), new Point2D.Double(getSize().width* (2.0/3), getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (2.0/3)), new Point2D.Double(getSize().width, getSize().height * (2.0/3))));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width/6, 0), new Point2D.Double(getSize().width/6, getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height/6), new Point2D.Double(getSize().width, getSize().height/6)));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width*(5/6.0), 0), new Point2D.Double(getSize().width*(5.0/6), getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height* (5.0/6)), new Point2D.Double(getSize().width, getSize().height*(5.0/6))));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width/12, 0), new Point2D.Double(getSize().width/12, getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height/12), new Point2D.Double(getSize().width, getSize().height/12)));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width*(11.0/12), 0), new Point2D.Double(getSize().width*(11.0/12), getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height* (11/12.0)), new Point2D.Double(getSize().width, getSize().height*(11.0/12))));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width/4, 0), new Point2D.Double(getSize().width/4, getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height/4), new Point2D.Double(getSize().width, getSize().height/4)));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width*(3/4.0), 0), new Point2D.Double(getSize().width*(3.0/4), getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height* (3/4.0)), new Point2D.Double(getSize().width, getSize().height*(3.0/4))));
-		
-		
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width*(7/12.0), 0), new Point2D.Double(getSize().width*(7.0/12), getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height* (7.0/12)), new Point2D.Double(getSize().width, getSize().height*(7.0/12))));
-		
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width*(5/12.0), 0), new Point2D.Double(getSize().width*(5.0/12), getSize().height)));
-		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height* (5.0/12)), new Point2D.Double(getSize().width, getSize().height*(5.0/12))));
-		
-		
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width / 2, 0),
+				new Point2D.Double(getSize().width / 2, getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height / 2),
+				new Point2D.Double(getSize().width, getSize().height / 2)));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width / 3, 0),
+				new Point2D.Double(getSize().width / 3, getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height / 3),
+				new Point2D.Double(getSize().width, getSize().height / 3)));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width * (2.0 / 3), 0),
+				new Point2D.Double(getSize().width * (2.0 / 3), getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (2.0 / 3)),
+				new Point2D.Double(getSize().width, getSize().height * (2.0 / 3))));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width / 6, 0),
+				new Point2D.Double(getSize().width / 6, getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height / 6),
+				new Point2D.Double(getSize().width, getSize().height / 6)));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width * (5 / 6.0), 0),
+				new Point2D.Double(getSize().width * (5.0 / 6), getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (5.0 / 6)),
+				new Point2D.Double(getSize().width, getSize().height * (5.0 / 6))));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width / 12, 0),
+				new Point2D.Double(getSize().width / 12, getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height / 12),
+				new Point2D.Double(getSize().width, getSize().height / 12)));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width * (11.0 / 12), 0),
+				new Point2D.Double(getSize().width * (11.0 / 12), getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (11 / 12.0)),
+				new Point2D.Double(getSize().width, getSize().height * (11.0 / 12))));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width / 4, 0),
+				new Point2D.Double(getSize().width / 4, getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height / 4),
+				new Point2D.Double(getSize().width, getSize().height / 4)));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width * (3 / 4.0), 0),
+				new Point2D.Double(getSize().width * (3.0 / 4), getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (3 / 4.0)),
+				new Point2D.Double(getSize().width, getSize().height * (3.0 / 4))));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width * (7 / 12.0), 0),
+				new Point2D.Double(getSize().width * (7.0 / 12), getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (7.0 / 12)),
+				new Point2D.Double(getSize().width, getSize().height * (7.0 / 12))));
+
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(getSize().width * (5 / 12.0), 0),
+				new Point2D.Double(getSize().width * (5.0 / 12), getSize().height)));
+		menuG2D.draw(new Line2D.Double(new Point2D.Double(0, getSize().height * (5.0 / 12)),
+				new Point2D.Double(getSize().width, getSize().height * (5.0 / 12))));
+
 		System.out.println(getSize().width + " " + getSize().height);
-		
+
 		g2d.dispose();
 
 		bs.show();
@@ -459,35 +415,51 @@ public class Game extends Canvas implements Runnable {
 			Thread.sleep(2);
 		} catch (Exception e) {
 		}
-		
-		
 	}
 
 	public void renderGame(Graphics2D g2d) {
-		if(level ==1)
-		bg.render(g2d);
-		if(level == 2)
-		lv3.render(g2d);
+		if (level.val == 1) {
+			lv1.render(g2d);
+		} else if (level.val == 2) {
+			lv2.render(g2d);
+		} else if (level.val == 3) {
+			lv3.render(g2d);
+		}
+
 		p.render(g2d);
 		d.render(g2d);
-		//d2.render(g2d);
+
 		for (Enemy e : enemies)
 			e.render(g2d);
-		
+		for (Bullet b : bullets)
+			b.render(g2d);
 		for (Laser l : lasers) {
 			l.render(g2d);
 		}
-		
-		for(Solid s : solids) {s.render(g2d);}
-		
-		g2d.setColor(Color.WHITE);
-
-		// g2d.fill(new Rectangle2D.Float(200, 25, 10, 10));
-		for (Bullet b : bullets) {
-			b.render(g2d);
+		Iterator<Effect> it = effects.iterator();
+		while (it.hasNext()) {
+			Effect e = it.next();
+			e.ani += e.type.speed;
+			if (e.ani > e.type.numFrames) {
+				it.remove();
+			} else {
+				e.render(g2d);
+			}
 		}
-		
+		g2d.setColor(Color.WHITE);
+		for (Solid s : solids)
+			s.render(g2d);
 
+		g2d.setColor(Color.black);
+		if (screen.getWidth() * scaleX < resolution.getWidth()) {
+			double temp = Math.round((resolution.getWidth() - screen.getWidth() * scaleX) / scaleX);
+			g2d.fill(new Rectangle2D.Double(0, 0, temp / 2, screen.getHeight()));
+			g2d.fill(new Rectangle2D.Double(screen.getWidth() + temp / 2, 0, 50, screen.getHeight()));
+		} else if (screen.getHeight() * scaleY < resolution.getHeight()) {
+			double temp = Math.round((resolution.getHeight() - screen.getHeight() * scaleY) / scaleY);
+			g2d.fill(new Rectangle2D.Double(0, 0, screen.getWidth(), temp / 2));
+			g2d.fill(new Rectangle2D.Double(0, screen.getHeight() + temp / 2, screen.getWidth(), 50));
+		}
 	}
 
 	public void tick() {
@@ -497,26 +469,26 @@ public class Game extends Canvas implements Runnable {
 			if (b.shooter != p && b.hitbox.intersects(p.hitbox)) {
 				bi.remove();
 				p.damage(5);
-				// System.out.println(p.health);
 			} else if (!b.onScreen() || b.collide(solids).size() > 0) {
 				bi.remove();
 			}
 
 		}
 
-		Iterator<Enemy> ei = enemies.iterator();
-		while (ei.hasNext()) {
-			Enemy e = ei.next();
+		for (Enemy e : enemies)
 			for (Bullet B : bullets)
 				if (!B.shooter.getClass().equals(e.getClass()) && e.hitbox.intersects(B.hitbox)) {
 					e.takeDamage(B.damage);
-					B.damage =0;
+					B.damage = 0;
 				}
-			if (e.alive == false) {
-				ei.remove();
-			}
 
+		Iterator<Enemy> ei = enemies.iterator();
+		while (ei.hasNext()) {
+			Enemy e = ei.next();
+			if (e.alive == false)
+				ei.remove();
 		}
+
 		for (Bullet b : bullets) {
 			for (Laser l : lasers) {
 				if (l.hit1.hitbox.intersects(b.hitbox)) {
@@ -525,45 +497,24 @@ public class Game extends Canvas implements Runnable {
 				if (l.hit2.hitbox.intersects(b.hitbox)) {
 					l.deactivate(l.hit2);
 				}
-				if(l.beam.hitbox.intersects(b.hitbox)) {
+				if (l.beam.hitbox.intersects(b.hitbox)) {
 					b.damage = 0;
 				}
 			}
 		}
-
-		scroll();
+		scrollX = screen.getWidth() / 2 - (p.hitbox.getCenterX());
+		scrollY = screen.getHeight() / 2 - (p.hitbox.getCenterY());
+		if (screen.getWidth() * scaleX < resolution.getWidth()) {
+			double temp = Math.round((resolution.getWidth() - screen.getWidth() * scaleX) / scaleX);
+			scrollX += temp / 2;
+		} else if (screen.getHeight() * scaleY < resolution.getHeight()) {
+			double temp = Math.round((resolution.getHeight() - screen.getHeight() * scaleY) / scaleY);
+			scrollY += temp / 2;
+		}
 	}
 
-	public void scroll() {
-		// float topBorder = 240, bottomBorder = 240, leftBorder = 360, rightBorder =
-		// 360, movex = 0, movey = 0;
-
-		scrollX = resolution.getWidth() / 2 - (p.hitbox.getCenterX());
-		scrollY = resolution.getHeight() / 2 - (p.hitbox.getCenterY());
-
-//		bg.scroll(scrollX, scrollY);
-//		lv1.scroll(scrollX, scrollY);
-//		lv3.scroll(scrollX, scrollY);
-//		p.scroll(scrollX, scrollY);
-//		d.scroll(scrollX, scrollY);
-//		d2.scroll(scrollX, scrollY);
-//		for (Enemy e : enemies)
-//			e.scroll(scrollX, scrollY);
-//		for (Bullet b : bullets)
-//			b.scroll(scrollX, scrollY);
-//		for (Solid s : solids)
-//			s.scroll(scrollX, scrollY);
-//		for(Laser l : lasers)
-//			l.scroll(scrollX, scrollY);
-
-//		if (cooldown == 0) {
-//			enemies.add(new Enemy((int) (bg.hitbox.getX() + 300), (int) (bg.hitbox.getY() + 240), 16, 20, this));
-//			cooldown = 2000;
-//		} else
-			//cooldown--;
-	}
-
-	public static Image[][] generateSprites(Image[][] s, BufferedImage spriteSheet, int w, int h) {
+	public static Image[][] generateSprites(Image[][] s, String str, int w, int h) throws IOException {
+		BufferedImage spriteSheet = ImageIO.read(Game.class.getResource(str));
 		for (int i = 0; i < s.length; i++) {
 			for (int j = 0; j < s[i].length; j++) {
 				s[i][j] = spriteSheet.getSubimage(i * w, j * h, w, h);
@@ -572,11 +523,28 @@ public class Game extends Canvas implements Runnable {
 		return s;
 	}
 
+	public static Image[] generateSprites(Image[] s, String str, int w, int h) throws IOException {
+		BufferedImage spriteSheet = ImageIO.read(Game.class.getResource(str));
+		for (int i = 0; i < s.length; i++) {
+			s[i] = spriteSheet.getSubimage(i * w, 0, w, h);
+		}
+		return s;
+	}
+
+	public static Image generateSprite(String str) throws IOException {
+		BufferedImage sprite = ImageIO.read(Game.class.getResource(str));
+		return sprite;
+	}
+
+	public static void drawImage(Image i, double x, double y, double w, double h, Graphics2D g) {
+		g.drawImage(i, (int) x, (int) y, (int) w, (int) h, null);
+	}
+
 	public static void main(String args[]) {
 		new Game();
 	}
 
-	class RenderTask extends TimerTask {
+	private class RenderTask extends TimerTask {
 		Game game;
 		Timer timer;
 
@@ -594,30 +562,21 @@ public class Game extends Canvas implements Runnable {
 }
 
 class Window extends Canvas {
-	/**
-	 * 
-	 */
+
+	JFrame frame;
+
 	private static final long serialVersionUID = 1L;
-	int wid;
-	int hit;
+
 	public Window(int w, int h, String t, Game game) {
-		JFrame frame = new JFrame(t);
+		frame = new JFrame(t);
 		frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		frame.setUndecorated(true);
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.add(game);
-		wid = frame.getWidth();
-		hit = frame.getHeight();
 		frame.setVisible(true);
+		frame.add(new KeyBindings(game.p));
+		this.setBounds(frame.getBounds());
 		game.start();
 	}
-	public double getW() {
-		return wid;
-	}
-	public double getH() {
-		return hit;
-	}
-	
-	
 }
