@@ -55,6 +55,7 @@ class Player extends Character {
 	}
 
 	public void tick() {
+		
 		action();
 
 		if (up && !down)
@@ -118,7 +119,8 @@ class Player extends Character {
 	}
 
 	public void reset(int x, int y) {
-		hitbox = new Rectangle2D.Double(360 - 8, 1540, hitbox.getWidth(), hitbox.getHeight());
+		this.x = x;
+		this.y = y;
 		health = 50;
 	}
 
@@ -158,29 +160,6 @@ class MouseInput extends MouseAdapter {
 		cx = (Game.screen.getWidth() * (p.game.scaleX)) / 2;
 		cy = (Game.screen.getHeight() * (p.game.scaleY)) / 2;
 
-		// double dx;
-		// double dy;
-
-//		if(mx >= cx && my <= cy) {
-//			dx = mx-cx;
-//			dy = cy-my;
-//			angle = Math.atan(dx/dy);
-//		}
-//		else if (mx < cx && my <= cy) {
-//			dx = cx-mx;
-//			dy = cy-my;
-//			angle = .5*Math.PI + Math.atan(dx/dy);
-//		}
-//		else if(mx <= cx && my > cy) {
-//			dx = cx - mx;
-//			dy = my - cy;
-//			angle = Math.PI + Math.atan(dx/dy);
-//		}
-//		else {
-//			dx = mx - cx;`
-//			dy = my - cy;
-//			angle = 2*Math.PI-Math.atan(dx/dy);
-//		}
 		angle = Math.atan2(my - cy, mx - cx);
 
 		// System.out.println(angle * (180/Math.PI));
