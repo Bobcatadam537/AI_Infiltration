@@ -144,7 +144,19 @@ class Menu extends MouseAdapter {
 			}
 			break;
 		case POWERUP1:
+			if (mouseOver(Power_1_1)) {
+				game.p.powerups.add(1);
+				game.p.s.damage = 100;
 
+				game.state = GameState.RUNNING;
+				game.prevState = GameState.POWERUP1;
+			} else if (mouseOver(Power_1_2)) {
+				game.p.powerups.add(2);
+				game.p.shootSpeed = 5;
+
+				game.state = GameState.RUNNING;
+				game.prevState = GameState.POWERUP1;
+			}
 			break;
 		case POWERUP2:
 			break;
@@ -164,36 +176,7 @@ class Menu extends MouseAdapter {
 			break;
 		default:
 			break;
-
 		}
-
-		if (mouseOver(mx, my, 100, 200, 600, 800)) {
-			if (game.state == GameState.POWERUP1) {
-				game.p.powerups.add(1);
-				game.p.s.damage = 100;
-
-				game.state = GameState.RUNNING;
-				game.prevState = GameState.POWERUP1;
-			}
-		}
-		if (mouseOver(mx, my, 800, 200, 600, 800)) {
-			if (game.state == GameState.POWERUP1) {
-				game.p.powerups.add(2);
-				game.p.shootSpeed = 5;
-
-				game.state = GameState.RUNNING;
-				game.prevState = GameState.POWERUP1;
-			}
-		}
-		if (mouseOver(mx, my, (int) (gameW * (10.0 / 12)), (int) (gameH * (10.0 / 12)), (int) gameW / 12,
-				(int) gameW / 12)) {
-			if (game.state == GameState.POWERUPDISPLAY) {
-				game.state = game.prevState;
-
-				game.prevState = GameState.POWERUPDISPLAY;
-			}
-		}
-
 	}
 
 	public void mouseReleased(MouseEvent e) {
