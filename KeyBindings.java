@@ -13,7 +13,7 @@ import game.Character.WEAPON;
 public class KeyBindings extends JLabel {
 	private enum ACT {
 		START_UP, STOP_UP, START_DOWN, STOP_DOWN, START_LEFT, STOP_LEFT, START_RIGHT, STOP_RIGHT, START_ATTACK,
-		STOP_ATTACK, SELECT_1, SELECT_2, QUIT;
+		STOP_ATTACK, SELECT_1, SELECT_2, QUIT, PAUSE;
 	}
 
 	private static final int IFW = JComponent.WHEN_IN_FOCUSED_WINDOW;
@@ -48,7 +48,7 @@ public class KeyBindings extends JLabel {
 		this.getInputMap(IFW).put(KeyStroke.getKeyStroke("1"), ACT.SELECT_1);
 		this.getInputMap(IFW).put(KeyStroke.getKeyStroke("2"), ACT.SELECT_2);
 		// quit game
-		this.getInputMap(IFW).put(KeyStroke.getKeyStroke("ESCAPE"), ACT.QUIT);
+		this.getInputMap(IFW).put(KeyStroke.getKeyStroke("ESCAPE"), ACT.PAUSE);
 		// action setup
 		for (ACT action : ACT.values())
 			this.getActionMap().put(action, new Action(action));
@@ -99,6 +99,15 @@ public class KeyBindings extends JLabel {
 				break;
 			case SELECT_2:
 				player.weapon = WEAPON.sword;
+				break;
+			case PAUSE:
+				if (player.game.state == GameState.RUNNING) {
+					player.game.prevState = GameState.RUNNING;
+					player.game.state = GameState.PAUSE;
+				} else if (player.game.state == GameState.PAUSE) {
+					player.game.prevState = GameState.PAUSE;
+					player.game.state = GameState.RUNNING;
+				}
 				break;
 			case QUIT:
 				System.exit(0);

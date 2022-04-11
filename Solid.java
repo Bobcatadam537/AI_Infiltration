@@ -7,8 +7,6 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 
-
-
 public class Solid extends Polygon {
 	/**
 	 * 
@@ -29,7 +27,6 @@ public class Solid extends Polygon {
 		}
 	}
 
-	
 	public Solid(ArrayList<Point2D> points, int t) {
 		lines = new ArrayList<Line2D.Double>();
 		type = t;
@@ -41,7 +38,7 @@ public class Solid extends Polygon {
 			}
 		}
 	}
-	
+
 	public Solid(ArrayList<Point2D> points, boolean isPolygon) {
 		if (isPolygon) {
 			int[] xPoints = new int[points.size()], yPoints = new int[points.size()];
@@ -83,9 +80,23 @@ public class Solid extends Polygon {
 		}
 		if (polygon != null)
 			g.fill(polygon);
-		
-		if(type == 2) {
-			
+
+		if (type == 2) {
+
+		}
+	}
+
+	public void render(Graphics2D g, Game game) {
+		g.setColor(Color.WHITE);
+		for (Line2D.Double l : lines) {
+			g.draw(new Line2D.Double(l.getX1() + Game.scrollX, l.getX2() + Game.scrollX, l.getY1() + Game.scrollY,
+					l.getY2() + Game.scrollY));
+		}
+		if (polygon != null)
+			g.fill(polygon);
+
+		if (type == 2) {
+
 		}
 	}
 }

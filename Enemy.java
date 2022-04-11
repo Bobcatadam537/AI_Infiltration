@@ -52,9 +52,10 @@ public class Enemy extends Character {
 		}
 		g.fill(new Rectangle2D.Float((int) (hitbox.getX() + Game.scrollX - 1), (int) (hitbox.getY() + Game.scrollY - 1),
 				health / 2, 3));
-
+		// if (nodePath != null)
+		// nodePath.render(g);
 		if (type == 3)
-			s.render(g);
+			System.out.println("RENDER SWORD");
 		if (loaded)
 			tick();
 		damage();
@@ -95,6 +96,7 @@ public class Enemy extends Character {
 		health -= damage;
 		if (health < 0) {
 			alive = false;
+			game.effects.add(new Effect(hitbox, effectType.explosion));
 		}
 	}
 

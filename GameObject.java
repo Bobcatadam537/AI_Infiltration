@@ -48,6 +48,6 @@ public class GameObject {
 	}
 
 	public boolean onScreen() {
-		return x + Game.scrollX < 240 && x + w + Game.scrollX > 0 && y + Game.scrollY < 240 && y + w + Game.scrollY > 0;
+		return Xshifted < 240 && Xshifted + w > 0 && Yshifted < 160 && Yshifted + h > 0;
 	}
 }

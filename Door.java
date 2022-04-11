@@ -31,36 +31,33 @@ public class Door extends GameObject {
 	public void render(Graphics2D g) {
 		updateRenderPosition();
 		Game.drawImage(sprite, Xshifted - 1, Yshifted - 1, w, h, g);
-		//System.out.println(Xshifted + ", " + Yshifted);
 		tick();
 	}
 
 	public void tick() {
-		if(cooldown == 0) {
-		if (this.hitbox.intersects(game.p.hitbox)) {
-			// Game.p.hitbox = new Rectangle2D.Double(game.p.hitbox.getX(),
-			// game.p.hitbox.getY()+y, game.p.hitbox.getWidth(), game.p.hitbox.getHeight());
-			System.out.println(game.level.toString());
-			game.p.reset(100, 100);
-			//game.enemies.removeAll(game.enemies);
-			game.level.val++;
-			if (game.level.val == 2) {
-				//game.buildLvl2();
-				game.level = Level.TWO;
-				game.state = GameState.POWERUP1;
-				System.out.println(game.level.toString());
-				game.buildLvl2();
-				//game.p.reset(1, cooldown);
-			} else if (game.level.val == 3) {
-				game.buildLvl3();
-				game.state = GameState.POWERUP2;
-			}
-			else {System.out.println("BROKENNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN");}
-			System.out.println("Level change");
-			cooldown = 100;
-			System.out.println(game.level.toString());
+		if (cooldown == 0) {
+			if (this.hitbox.intersects(game.p.hitbox)) {
+				switch (++game.level) {
+				case 2:
+					game.level = 2;
+					game.state = GameState.POWERUP1;
+					game.buildLvl2();
+					break;
+				case 3:
+					game.buildLvl3();
+					game.state = GameState.POWERUP2;
+					break;
+				default:
+					System.out.println("DATA FOR LEVEL " + game.level + " NOT FOUND");
+					break;
+				}
 
-		}}else cooldown--;
+				System.out.println("Level change");
+				cooldown = 100;
+
+			}
+		} else
+			cooldown--;
 
 	}
 }

@@ -10,15 +10,15 @@ public class Bullet extends Weapon {
 	Character shooter;
 
 	public Bullet(int x, int y, double angle) {
-		super(x, y, 5, 5);
-		yv = speed * Math.sin(angle);
-		xv = speed * Math.cos(angle);
-		damage = 20;
+		this(null, x, y, angle);
 	}
 
 	public Bullet(Character s, int x, int y, double angle) {
-		this(x, y, angle);
+		super(x, y, 5, 5);
 		shooter = s;
+		yv = speed * Math.sin(angle) + (shooter == null ? 0 : shooter.vy * 4);
+		xv = speed * Math.cos(angle) + (shooter == null ? 0 : shooter.vx * 4);
+		damage = 20;
 	}
 
 	public void reset(int x, int y) {

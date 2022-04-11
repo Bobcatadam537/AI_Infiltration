@@ -5,7 +5,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -44,7 +43,7 @@ class Player extends Character {
 	public void render(Graphics2D g) {
 		updateRenderPosition();
 		Game.drawImage(sprites[direction.val + ((int) ani)][action.val], Xshifted - 1, Yshifted, w + 2, h, g);
-		g.fill(new Rectangle2D.Double(Xshifted - 1, Yshifted - 1, health / 2, 3));
+		// g.fill(new Rectangle2D.Double(Xshifted - 1, Yshifted - 1, health / 2, 3));
 
 		if (action == ACTION.melee) {
 			s.render(g);
@@ -55,7 +54,6 @@ class Player extends Character {
 	}
 
 	public void tick() {
-		
 		action();
 
 		if (up && !down)
@@ -99,11 +97,6 @@ class Player extends Character {
 		}
 	}
 
-	public double findShootAngle() {
-		shootAngle = Math.tan((mouseX - hitbox.getCenterY()) / (mouseY - hitbox.getCenterY()));
-		return shootAngle;
-	}
-
 	public void action() {
 		if (space)
 			if (weapon == WEAPON.gun)
@@ -130,6 +123,9 @@ class Player extends Character {
 			inv = 1;
 		} else
 			inv = 0;
+
+		if (health <= 0)
+			game.state = GameState.GAME_OVER;
 	}
 }
 
@@ -157,12 +153,7 @@ class MouseInput extends MouseAdapter {
 	}
 
 	public double findAngle() {
-		cx = (Game.screen.getWidth() * (p.game.scaleX)) / 2;
-		cy = (Game.screen.getHeight() * (p.game.scaleY)) / 2;
-
-		angle = Math.atan2(my - cy, mx - cx);
-
-		// System.out.println(angle * (180/Math.PI));
+		angle = Math.atan2(my - (p.game.resolution.getHeight() / 2), mx - (p.game.resolution.getWidth() / 2));
 		return angle;
 	}
 
